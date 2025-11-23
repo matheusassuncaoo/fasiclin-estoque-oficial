@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema Fasiclin - Ordens de Compra</title>
+    <link
+      rel="shortcut icon"
+      th:href="@{/assets/icon/OrdemCompraIcone.ico}"
+      type="image/x-icon"
+    />
+    <link rel="stylesheet" th:href="@{/assets/css/global.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/ordemcompra.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/ordemcompra-responsive.css}" />
+  </head>
+  <body>
+    <!-- Container Principal -->
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <div class="page-title-container">
+            <img
+              th:src="@{/assets/logo/FasicomercioLogo.png}"
+              alt="Fasicomércio"
+              class="page-logo"
+            />
+            <h1 class="page-title">Ordens de Compra</h1>
+          </div>
+          <div class="header-info">
+            <button
+              class="btn-info"
+              id="btnInfoSistema"
+              title="Informações do Sistema"
+            >
+              <i data-feather="help-circle"></i>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Modal de Informações do Sistema -->
+      <div class="modal-overlay" id="modalInfo">
+        <div class="modal modal-info">
+          <div class="modal-header">
+            <h2>
+              <i data-feather="info"></i>
+              Sistema de Ordens de Compra - Fasiclin
+            </h2>
+            <button class="modal-close" id="btnCloseInfo">
+              <i data-feather="x"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="info-sections">
+              <div class="info-section">
+                <h3><i data-feather="book-open"></i> Como usar</h3>
+                <ul>
+                  <li>
+                    <strong>Nova Ordem:</strong> Clique em "Nova Ordem de
+                    Compra" para criar
+                  </li>
+                  <li>
+                    <strong>Editar:</strong> Clique no ícone de edição na linha
+                    da ordem
+                  </li>
+                  <li>
+                    <strong>Excluir:</strong> Use o checkbox e "Remover
+                    selecionados"
+                  </li>
+                  <li>
+                    <strong>Filtrar:</strong> Use os filtros acima da tabela
+                  </li>
+                  <li>
+                    <strong>Exportar:</strong> Clique em "Exportar Excel" para
+                    baixar planilha
+                  </li>
+                </ul>
+              </div>
+
+              <div class="info-section">
+                <h3><i data-feather="bar-chart-2"></i> Estatísticas</h3>
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <span class="stat-label">Total de Ordens:</span>
+                    <span class="stat-value" id="statTotalOrdens">-</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">Concluídas:</span>
+                    <span class="stat-value" id="statConcluidas">-</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">Pendentes:</span>
+                    <span class="stat-value" id="statPendentes">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-section">
+                <h3><i data-feather="settings"></i> Status das Ordens</h3>
+                <div class="status-legend">
+                  <div class="status-item">
+                    <span class="status-badge status-pend">PEND</span>
+                    <span>Pendente</span>
+                  </div>
+                  <div class="status-item">
+                    <span class="status-badge status-proc">PROC</span>
+                    <span>Em Processamento</span>
+                  </div>
+                  <div class="status-item">
+                    <span class="status-badge status-conc">CONC</span>
+                    <span>Concluída</span>
+                  </div>
+                  <div class="status-item">
+                    <span class="status-badge status-canc">CANC</span>
+                    <span>Cancelada</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-section">
+                <h3><i data-feather="code"></i> Informações Técnicas</h3>
+                <p><strong>Versão:</strong> 1.0.2</p>
+                <p>
+                  <strong>Última atualização:</strong>
+                  <span id="lastUpdate">-</span>
+                </p>
+                <p>
+                  <strong>API Status:</strong>
+                  <span id="apiStatus" class="status-online">Online</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="btnCloseInfoFooter"
+            >
+              <i data-feather="check"></i> Entendi
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button class="btn btn-primary" id="btnNovaOrdem">
+            <i data-feather="plus"></i>
+            Nova Ordem de Compra
+          </button>
+          <button class="btn btn-success" id="btnExportarExcel">
+            <i data-feather="download"></i>
+            Exportar Excel
+          </button>
+          <button class="btn btn-danger" id="btnRemoverSelecionados">
+            <i data-feather="trash-2"></i>
+            Remover selecionados
+          </button>
+        </div>
+
+        <!-- Barra de Busca -->
+        <div class="toolbar-right">
+          <div class="search-container">
+            <div class="search-input-group">
+              <i data-feather="search" class="search-icon"></i>
+              <input
+                type="text"
+                id="searchInput"
+                class="search-input"
+                placeholder="Buscar por ID, status, valor ou data..."
+                autocomplete="off"
+              />
+              <button
+                type="button"
+                id="clearSearch"
+                class="search-clear"
+                title="Limpar busca"
+                style="display: none"
+              >
+                <i data-feather="x"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela de Ordens de Compra -->
+      <div class="table-container">
+        <table class="ordem-compra-table">
+          <thead>
+            <tr>
+              <th class="checkbox-column">
+                <input type="checkbox" id="selectAll" />
+              </th>
+              <th class="sortable" data-sort="id">
+                ID
+                <i data-feather="chevron-up" class="sort-icon"></i>
+              </th>
+              <th class="sortable" data-sort="statusOrdemCompra">
+                Status
+                <i data-feather="chevron-up" class="sort-icon"></i>
+              </th>
+              <th class="sortable" data-sort="dataPrev">
+                Data Prevista
+                <i data-feather="chevron-up" class="sort-icon"></i>
+              </th>
+              <th class="sortable" data-sort="dataOrdem">
+                Data Ordem
+                <i data-feather="chevron-up" class="sort-icon"></i>
+              </th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="ordemCompraTableBody">
+            <!-- Dados serão inseridos dinamicamente via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container">
+        <div class="pagination-info">
+          <span>Mostrar</span>
+          <select id="itemsPerPage" class="pagination-select">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <span>entradas</span>
+        </div>
+
+        <div class="pagination-controls">
+          <span class="pagination-text" id="firstPage" style="cursor: pointer"
+            >Primeira</span
+          >
+          <button class="pagination-btn" id="prevPage">
+            <i data-feather="chevron-left"></i>
+          </button>
+          <span class="pagination-current">1</span>
+          <button class="pagination-btn" id="nextPage">
+            <i data-feather="chevron-right"></i>
+          </button>
+          <span class="pagination-text" id="lastPage" style="cursor: pointer"
+            >Última</span
+          >
+          <span
+            class="pagination-details"
+            id="paginationDetails"
+            style="margin-left: 12px; opacity: 0.8"
+          ></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Cadastro/Edição Ordem Compra -->
+    <div class="modal-overlay" id="modalOrdemCompra">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="modalTitle">
+            <i data-feather="shopping-cart"></i>
+            Nova Ordem de Compra
+          </h2>
+          <button class="modal-close" id="btnCloseModal">
+            <i data-feather="x"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form id="formOrdemCompra" class="modal-form">
+            <input type="hidden" id="id" name="id" />
+
+            <div class="form-content">
+              <div class="form-section">
+                <h3><i data-feather="info"></i> Informações da Ordem</h3>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="statusOrdemCompra">
+                      <i data-feather="flag"></i>
+                      Status da Ordem *
+                    </label>
+                    <select
+                      id="statusOrdemCompra"
+                      name="statusOrdemCompra"
+                      required
+                    >
+                      <option value="">Selecione um status...</option>
+                      <option value="PEND" selected>Pendente</option>
+                      <option value="PROC">Em Processamento</option>
+                      <option value="CONC">Concluída</option>
+                      <option value="CANC">Cancelada</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="dataPrev">
+                      <i data-feather="calendar"></i>
+                      Data Prevista de Entrega *
+                    </label>
+                    <input type="date" id="dataPrev" name="dataPrev" required />
+                    <small class="form-help"
+                      >Data estimada para recebimento</small
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="dataOrdem">
+                      <i data-feather="clock"></i>
+                      Data da Ordem *
+                    </label>
+                    <input
+                      type="date"
+                      id="dataOrdem"
+                      name="dataOrdem"
+                      required
+                      readonly
+                    />
+                    <small class="form-help">Data atual (automática)</small>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group full-width">
+                    <label for="observacoesOrdem">
+                      <i data-feather="file-text"></i>
+                      Observações
+                    </label>
+                    <textarea
+                      id="observacoesOrdem"
+                      name="observacoesOrdem"
+                      rows="4"
+                      placeholder="Informações adicionais sobre a ordem de compra..."
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="form-info-box">
+                  <div class="info-content">
+                    <i data-feather="info"></i>
+                    <div>
+                      <strong>Próximo passo:</strong> Após criar a ordem de
+                      compra, você poderá adicionar os itens/produtos através da
+                      ação "Gerenciar Itens" na tabela.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="modal-actions">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                id="btnCancelModal"
+              >
+                <i data-feather="x"></i> Cancelar
+              </button>
+
+              <button type="submit" class="btn btn-success" id="btnSalvarOrdem">
+                <i data-feather="check"></i> Criar Ordem de Compra
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Visualização da Ordem -->
+    <div class="modal-overlay" id="modalViewOrdem" style="display: none">
+      <div class="modal modal-view">
+        <div class="modal-header">
+          <h2>
+            <i data-feather="eye"></i>
+            Detalhes da Ordem de Compra
+          </h2>
+          <button class="modal-close" id="btnCloseViewModal">
+            <i data-feather="x"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="view-sections">
+            <div class="view-section">
+              <h3><i data-feather="hash"></i> Informações Básicas</h3>
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>ID da Ordem:</label>
+                  <span id="viewId" class="value">-</span>
+                </div>
+                <div class="info-item">
+                  <label>Status:</label>
+                  <span id="viewStatus" class="value status-badge">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="view-section">
+              <h3><i data-feather="calendar"></i> Datas</h3>
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>Data da Ordem:</label>
+                  <span id="viewDataOrdem" class="value">-</span>
+                </div>
+                <div class="info-item">
+                  <label>Data Prevista:</label>
+                  <span id="viewDataPrev" class="value">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="view-section">
+              <h3><i data-feather="package"></i> Itens da Ordem</h3>
+              <div class="items-container-view">
+                <div class="items-table-wrapper">
+                  <table class="mini-table">
+                    <thead>
+                      <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                      </tr>
+                    </thead>
+                    <tbody id="viewItensTableBody">
+                      <tr class="empty-row">
+                        <td colspan="2" class="text-center">
+                          <div class="empty-state">
+                            <i data-feather="package" class="empty-icon"></i>
+                            <p class="empty-message">Nenhum item encontrado</p>
+                            <small class="empty-hint"
+                              >Esta ordem não possui itens cadastrados</small
+                            >
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="financial-summary-view">
+                  <div class="summary-header">
+                    <i data-feather="hash"></i>
+                    <span>Resumo</span>
+                  </div>
+                  <div class="summary-content">
+                    <div class="summary-row">
+                      <span class="summary-label">
+                        <i data-feather="hash"></i>
+                        Total de Itens:
+                      </span>
+                      <span class="summary-value" id="viewTotalItens">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-primary" id="btnEditFromView">
+            <i data-feather="edit-2"></i> Editar
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="btnCloseViewModalBtn"
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Credenciais para Desativação -->
+    <div class="modal-overlay" id="modalCredentials">
+      <div class="modal modal-credentials">
+        <div class="modal-header">
+          <h2>
+            <i data-feather="shield"></i>
+            Confirmação de Remoção
+          </h2>
+          <button class="modal-close" id="btnCloseCredentials">
+            <i data-feather="x"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="credentials-info">
+            <p>
+              <strong>Atenção:</strong> Esta ação irá remover permanentemente 
+              <span id="credentialsTargetId">a ordem de compra selecionada</span>.
+            </p>
+            <p>Por favor, confirme sua identidade para prosseguir:</p>
+          </div>
+
+          <form id="credentialsForm" class="credentials-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="credentialsLogin">
+                  <i data-feather="user"></i>
+                  Login *
+                </label>
+                <input
+                  type="text"
+                  id="credentialsLogin"
+                  name="login"
+                  required
+                  autocomplete="username"
+                  placeholder="Digite seu login"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="credentialsPassword">
+                  <i data-feather="lock"></i>
+                  Senha *
+                </label>
+                <input
+                  type="password"
+                  id="credentialsPassword"
+                  name="senha"
+                  required
+                  autocomplete="current-password"
+                  placeholder="Digite sua senha"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="deactivationReason">
+                  <i data-feather="file-text"></i>
+                  Motivo da remoção
+                </label>
+                <textarea
+                  id="deactivationReason"
+                  name="motivo"
+                  rows="3"
+                  placeholder="Descreva o motivo da remoção (opcional)"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="credentials-warning">
+              <i data-feather="alert-triangle"></i>
+              <span
+                >Esta ação não pode ser desfeita. A ordem será removida
+                permanentemente.</span
+              >
+            </div>
+          </form>
+        </div>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="btnCancelDeactivation"
+          >
+            <i data-feather="x"></i>
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-danger"
+            id="btnConfirmDeactivation"
+            form="credentialsForm"
+          >
+            <i data-feather="trash-2"></i>
+            Confirmar Remoção
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Gerenciamento de Itens -->
+    <div class="modal-overlay" id="modalItens" style="display: none">
+      <div class="modal modal-large modal-itens">
+        <div class="modal-header">
+          <h2 id="modalItensTitle">
+            <i data-feather="package"></i>
+            Gerenciar Itens da Ordem #<span id="ordemNumero">--</span>
+          </h2>
+          <button class="modal-close" id="btnCloseItens" title="Fechar Modal">
+            <i data-feather="x"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Informações da Ordem -->
+          <div class="ordem-info">
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Status:</label>
+                <span id="ordemStatus" class="status-badge">-</span>
+              </div>
+              <div class="info-item">
+                <label>Data Prevista:</label>
+                <span id="ordemDataPrev">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulário para Adicionar Item -->
+          <div class="add-item-section">
+            <h3><i data-feather="plus-circle"></i> Adicionar Item à Ordem</h3>
+
+            <form class="add-item-form" onsubmit="return false;">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="produtoSelect">
+                    <i data-feather="box"></i>
+                    Produto *
+                  </label>
+                  <select id="produtoSelect" required class="form-control">
+                    <option value="">Carregando produtos...</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="quantidadeInput">
+                    <i data-feather="hash"></i>
+                    Quantidade *
+                  </label>
+                  <input
+                    type="number"
+                    id="quantidadeInput"
+                    class="form-control"
+                    min="1"
+                    step="1"
+                    placeholder="Ex: 10"
+                    required
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="submit"
+                  id="btnAdicionarItem"
+                  class="btn btn-success btn-add-item"
+                >
+                  <i data-feather="plus"></i>
+                  <span>Adicionar Item</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Lista de Itens Adicionados -->
+          <div class="items-list-section">
+            <h3>
+              <i data-feather="list"></i>
+              <span>Itens da Ordem</span>
+              <span class="items-count" id="itemsCountBadge">0 itens</span>
+            </h3>
+
+            <div class="items-container">
+              <div class="items-table-wrapper">
+                <div class="items-table">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th class="actions-column">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="itensTableBody">
+                      <tr class="empty-row">
+                        <td colspan="3" class="text-center">
+                          <div class="empty-state">
+                            <i data-feather="package" class="empty-icon"></i>
+                            <p class="empty-message">
+                              Nenhum item adicionado ainda
+                            </p>
+                            <small class="empty-hint"
+                              >Use o formulário acima para adicionar produtos à
+                              ordem</small
+                            >
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-actions">
+          <div class="footer-info">
+            <i data-feather="info"></i>
+            <small
+              >Os itens serão salvos permanentemente na ordem de compra</small
+            >
+          </div>
+          <div class="footer-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              id="btnCancelarItens"
+            >
+              <i data-feather="x"></i>
+              Cancelar
+            </button>
+
+            <button type="button" class="btn btn-primary" id="btnSalvarItens">
+              <i data-feather="check"></i>
+              Salvar Itens
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feather Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.2/feather.min.js"></script>
+
+    <!-- SheetJS para exportação Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+    <!-- Scripts do projeto -->
+    <script th:src="@{/assets/js/ApiManager.js}" defer></script>
+ 
+    <script th:src="@{/assets/js/OrdemCompraComponentsManager.js}" defer></script>
+    <script th:src="@{/assets/js/OrdemCompraManager.js}" defer></script>
+
+    <script>
+      // Inicializar ícones e aplicação
+      feather.replace();
+    </script>
+  </body>
+</html>

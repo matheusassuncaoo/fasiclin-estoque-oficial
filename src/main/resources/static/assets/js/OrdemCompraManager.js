@@ -11,7 +11,7 @@ class OrdemCompraManager {
     this.cache = new Map();
 
     // Inicializar managers
-    this.componentManager = null;
+    this.componentManager = window.ordemCompraComponentsManager;
     this.filterManager = null;
 
     this.init();
@@ -25,18 +25,19 @@ class OrdemCompraManager {
     const maxAttempts = 50; // 5 segundos máximo
 
     while (
-      typeof OrdemCompraComponentsManager === "undefined" &&
+      !window.ordemCompraComponentsManager &&
       attempts < maxAttempts
     ) {
       await new Promise((resolve) => setTimeout(resolve, 100));
       attempts++;
     }
 
-    if (typeof OrdemCompraComponentsManager === "undefined") {
-      throw new Error(
-        "OrdemCompraComponentsManager não foi carregado após 5 segundos"
-      );
+    if (!window.ordemCompraComponentsManager) {
+      console.error("OrdemCompraComponentsManager não carregado");
+      return;
     }
+    
+    this.componentManager = window.ordemCompraComponentsManager;
   }
 
   /**

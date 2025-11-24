@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import com.br.fasiclin.estoque.estoque.model.Fornecedor;
 
 import jakarta.persistence.QueryHint;
@@ -39,7 +38,8 @@ public interface FornecedorRepository extends JpaRepository<Fornecedor, Integer>
      * @param idPessoa ID da pessoa
      * @return Optional contendo o fornecedor se encontrado
      */
-    @Query("SELECT f FROM Fornecedor f WHERE f.idPessoa = :idPessoa")
+        // Ajustado: entidade usa campo pessoasJuridica (OneToOne) em vez de idPessoa
+        @Query("SELECT f FROM Fornecedor f WHERE f.pessoasJuridica.id = :idPessoa")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50")
@@ -103,7 +103,7 @@ public interface FornecedorRepository extends JpaRepository<Fornecedor, Integer>
      * @param idPessoa ID da pessoa
      * @return true se existe, false caso contrário
      */
-    @Query("SELECT COUNT(f) > 0 FROM Fornecedor f WHERE f.idPessoa = :idPessoa")
+        @Query("SELECT COUNT(f) > 0 FROM Fornecedor f WHERE f.pessoasJuridica.id = :idPessoa")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true")
     })

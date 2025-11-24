@@ -8,9 +8,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.br.fasiclin.estoque.estoque.model.OrdemCompra;
-import com.br.fasiclin.estoque.estoque.model.StatusOrdemCompra;
+ 
 
-import jakarta.persistence.QueryHint;                   
+import jakarta.persistence.QueryHint;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -90,7 +90,7 @@ public interface OrdemCompraRepository extends JpaRepository<OrdemCompra, Intege
         @Param("dataPrev") LocalDate dataPrev,
         @Param("dataOrdem") LocalDate dataOrdem,
         @Param("dataEntre") LocalDate dataEntre,
-        @Param("status") StatusOrdemCompra status
+        @Param("status") OrdemCompra.StatusOrdemCompra status
     );
 
     /**
@@ -117,7 +117,7 @@ public interface OrdemCompraRepository extends JpaRepository<OrdemCompra, Intege
             @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
             @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
     })
-    List<OrdemCompra> findByStatus(@Param("status") StatusOrdemCompra status);
+    List<OrdemCompra> findByStatus(@Param("status") OrdemCompra.StatusOrdemCompra status);
 
     /**
      * Busca ordens de compra por faixa de valor.
@@ -246,6 +246,6 @@ public interface OrdemCompraRepository extends JpaRepository<OrdemCompra, Intege
             @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
             @QueryHint(name = "jakarta.persistence.query.timeout", value = "1000")
     })
-    Long countByStatus(@Param("status") StatusOrdemCompra status);
+    Long countByStatus(@Param("status") OrdemCompra.StatusOrdemCompra status);
 
 }

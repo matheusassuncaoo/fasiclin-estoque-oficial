@@ -50,7 +50,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param id ID do lote
      * @return Optional contendo o lote encontrado ou vazio se não existir
      */
-    @Query("SELECT l FROM Lote l WHERE l.idLote = :id")
+        @Query("SELECT l FROM Lote l WHERE l.id = :id")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -72,7 +72,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param idOrdComp ID da ordem de compra
      * @return Lista de lotes da ordem de compra especificada
      */
-    @Query("SELECT l FROM Lote l WHERE l.idOrdComp = :idOrdComp ORDER BY l.dataVenc ASC")
+        @Query("SELECT l FROM Lote l WHERE l.ordemCompra.id = :idOrdComp ORDER BY l.dataVencimento ASC")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -93,7 +93,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param dataVencimento Data de vencimento
      * @return Lista de lotes com a data de vencimento especificada
      */
-    @Query("SELECT l FROM Lote l WHERE l.dataVenc = :dataVencimento ORDER BY l.idLote ASC")
+        @Query("SELECT l FROM Lote l WHERE l.dataVencimento = :dataVencimento ORDER BY l.id ASC")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -115,7 +115,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param dataFim    Data final
      * @return Lista de lotes com vencimento na faixa especificada
      */
-    @Query("SELECT l FROM Lote l WHERE l.dataVenc BETWEEN :dataInicio AND :dataFim ORDER BY l.dataVenc ASC")
+        @Query("SELECT l FROM Lote l WHERE l.dataVencimento BETWEEN :dataInicio AND :dataFim ORDER BY l.dataVencimento ASC")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -136,7 +136,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * 
      * @return Lista de lotes vencidos
      */
-    @Query("SELECT l FROM Lote l WHERE l.dataVenc < CURRENT_DATE ORDER BY l.dataVenc ASC")
+        @Query("SELECT l FROM Lote l WHERE l.dataVencimento < CURRENT_DATE ORDER BY l.dataVencimento ASC")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -154,7 +154,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * 
      * @return Lista de lotes próximos ao vencimento
      */
-    @Query("SELECT l FROM Lote l WHERE l.dataVenc BETWEEN CURRENT_DATE AND :dataLimite ORDER BY l.dataVenc ASC")
+        @Query("SELECT l FROM Lote l WHERE l.dataVencimento BETWEEN CURRENT_DATE AND :dataLimite ORDER BY l.dataVencimento ASC")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -173,7 +173,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param quantidade Quantidade no lote
      * @return Lista de lotes com a quantidade especificada
      */
-    @Query("SELECT l FROM Lote l WHERE l.qntd = :quantidade ORDER BY l.dataVenc ASC")
+        @Query("SELECT l FROM Lote l WHERE l.quantidade = :quantidade ORDER BY l.dataVencimento ASC")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -195,7 +195,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param quantidadeMaxima Quantidade máxima
      * @return Lista de lotes dentro da faixa especificada
      */
-    @Query("SELECT l FROM Lote l WHERE l.qntd BETWEEN :quantidadeMinima AND :quantidadeMaxima ORDER BY l.qntd ASC")
+        @Query("SELECT l FROM Lote l WHERE l.quantidade BETWEEN :quantidadeMinima AND :quantidadeMaxima ORDER BY l.quantidade ASC")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -217,7 +217,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param quantidadeMinima Quantidade mínima considerada como baixa
      * @return Lista de lotes com quantidade baixa
      */
-    @Query("SELECT l FROM Lote l WHERE l.qntd < :quantidadeMinima ORDER BY l.qntd ASC")
+        @Query("SELECT l FROM Lote l WHERE l.quantidade < :quantidadeMinima ORDER BY l.quantidade ASC")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -235,7 +235,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * 
      * @return Lista de lotes zerados
      */
-    @Query("SELECT l FROM Lote l WHERE l.qntd = 0 ORDER BY l.dataVenc ASC")
+        @Query("SELECT l FROM Lote l WHERE l.quantidade = 0 ORDER BY l.dataVencimento ASC")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
@@ -254,7 +254,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param idOrdComp ID da ordem de compra
      * @return Quantidade de lotes da ordem de compra
      */
-    @Query("SELECT COUNT(l) FROM Lote l WHERE l.idOrdComp = :idOrdComp")
+        @Query("SELECT COUNT(l) FROM Lote l WHERE l.ordemCompra.id = :idOrdComp")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.cacheable", value = "true"),
@@ -275,7 +275,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param idOrdComp ID da ordem de compra
      * @return Quantidade total de produtos nos lotes da ordem de compra
      */
-    @Query("SELECT COALESCE(SUM(l.qntd), 0) FROM Lote l WHERE l.idOrdComp = :idOrdComp")
+        @Query("SELECT COALESCE(SUM(l.quantidade), 0) FROM Lote l WHERE l.ordemCompra.id = :idOrdComp")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.cacheable", value = "true"),
@@ -295,7 +295,7 @@ public interface LoteRepository extends JpaRepository<Lote, Integer> {
      * @param idOrdComp ID da ordem de compra
      * @return Quantidade de lotes vencidos da ordem de compra
      */
-    @Query("SELECT COUNT(l) FROM Lote l WHERE l.idOrdComp = :idOrdComp AND l.dataVenc < CURRENT_DATE")
+        @Query("SELECT COUNT(l) FROM Lote l WHERE l.ordemCompra.id = :idOrdComp AND l.dataVencimento < CURRENT_DATE")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.cacheable", value = "false"), // Não cachear consultas dinâmicas

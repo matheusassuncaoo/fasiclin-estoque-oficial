@@ -1,75 +1,86 @@
 package com.br.fasiclin.estoque.estoque.model;
 
+import org.hibernate.annotations.DynamicUpdate;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.OneToMany;
-
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.FutureOrPresent;
-
 
 @Entity
 @Table(name = "ORDEMCOMPRA")
-@Data
-@NoArgsConstructor
+@DynamicUpdate
+@Getter
+@Setter
 @AllArgsConstructor
-@EqualsAndHashCode(of = "id")
-@ToString(exclude = "itens")
+@NoArgsConstructor
 public class OrdemCompra {
+
+    public static final String TABLE_NAME = "ORDEMCOMPRA";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IDORDCOMP")
     private Integer id;
 
-    @NotNull(message = "O status da ordem é obrigatório.")
+    @NotNull(message = "Status da ordem de compra é obrigatório")
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUSORD", nullable = false)
-    private StatusOrdemCompra status;
+    private StatusOrdemCompra statusOrdemCompra;
 
-    @NotNull(message = "O valor da ordem é obrigatório.")
-    @Positive(message = "O valor da ordem deve ser positivo.")
     @Column(name = "VALOR", nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
 
-    @NotNull(message = "A data de previsão é obrigatória.")
-    @FutureOrPresent(message = "A data de previsão não pode ser no passado.")
+    @NotNull(message = "Data prevista é obrigatória")
     @Column(name = "DATAPREV", nullable = false)
-    private LocalDate dataPrevisao;
+    private LocalDate dataPrev;
 
-    @NotNull(message = "A data da ordem é obrigatória.")
+    @NotNull(message = "Data da ordem é obrigatória")
     @Column(name = "DATAORDEM", nullable = false)
     private LocalDate dataOrdem;
 
-    @NotNull(message = "A data de entrega é obrigatória.")
     @Column(name = "DATAENTRE", nullable = false)
-    private LocalDate dataEntrega;
+    private LocalDate dataEntre;
     
-    @OneToMany(mappedBy = "ordemCompra", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<ItemOrdemCompra> itens = new ArrayList<>();
+    /**
+     * Método executado antes de persistir a entidade pela primeira vez.
+     * Define valores padrão para campos que não são obrigatórios no frontend
+     * mas são NOT NULL no banco de dados.
+     */
+    @PrePersist
+    public void prePersist() {
+        // Só aplica defaults se for criação (id == null)
+        if (this.id == null) {
+            // Se valor não foi definido, usar 0.00 como padrão
+            if (this.valor == null) {
+                this.valor = BigDecimal.ZERO;
+            }
+            
+            // Se dataEntre não foi definida, usar a data prevista como padrão
+            if (this.dataEntre == null) {
+                this.dataEntre = this.dataPrev;
+            }
+        }
+    }
 
-    public enum StatusOrdem {
-        PEND, ANDA, CONC
+    public enum StatusOrdemCompra {
+        PEND,  // Pendente
+        ANDA,  // Andamento
+        CONC,  // Concluído
+        CANC   // Cancelado
     }
 }

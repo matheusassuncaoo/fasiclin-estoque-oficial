@@ -6,7 +6,7 @@
 class ApiManager {
   constructor() {
     // Configuração base da API
-    this.baseURL = "http://localhost:8080/api"; // Ajustar conforme configuração do backend
+    this.baseURL = "/api"; // Ajustar conforme configuração do backend
     this.defaultHeaders = {
       "Content-Type": "application/json",
       Accept: "application/json",

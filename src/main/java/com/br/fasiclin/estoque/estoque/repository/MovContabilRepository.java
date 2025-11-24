@@ -2,18 +2,15 @@ package com.br.fasiclin.estoque.estoque.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.br.fasiclin.estoque.estoque.model.MovContabil;
 
-import jakarta.persistence.QueryHint;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Repository para operações de banco de dados da entidade MovContabil.
@@ -53,16 +50,8 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param id ID da movimentação contábil
      * @return Optional contendo a movimentação encontrada ou vazio se não existir
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.idMovContab = :id")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    Optional<MovContabil> findByIdMovContab(@Param("id") Integer id);
+    // Métodos anteriores removidos: entidade atual não possui campos antigos usados nas queries.
+    // Utilizar findById padrão do JpaRepository.
 
     /**
      * Busca movimentação contábil pelo número do lançamento.
@@ -74,16 +63,7 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param numeroLancamento Número único do lançamento
      * @return Optional contendo a movimentação encontrada ou vazio se não existir
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.numeLancam = :numeroLancamento")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    Optional<MovContabil> findByNumeroLancamento(@Param("numeroLancamento") Integer numeroLancamento);
+    // Removido: campo numeLancam não existe na entidade atual.
 
     /**
      * Busca movimentações contábeis por ID da ordem de compra.
@@ -96,16 +76,8 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param idOrdComp ID da ordem de compra
      * @return Lista de movimentações da ordem de compra especificada
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.idOrdComp = :idOrdComp ORDER BY m.dataLancame DESC")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    List<MovContabil> findByIdOrdComp(@Param("idOrdComp") Integer idOrdComp);
+    // Novos métodos baseados nos campos reais da entidade
+    List<MovContabil> findByProduto_Id(Integer produtoId);
 
     /**
      * Busca movimentações contábeis por ID do item de venda.
@@ -118,16 +90,7 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param idItemVenda ID do item de venda
      * @return Lista de movimentações do item de venda especificado
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.idItemVenda = :idItemVenda ORDER BY m.dataLancame DESC")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    List<MovContabil> findByIdItemVenda(@Param("idItemVenda") Integer idItemVenda);
+    List<MovContabil> findByTipoMovimentacao(String tipoMovimentacao);
 
     /**
      * Busca movimentações contábeis por ID do plano de contas.
@@ -140,16 +103,7 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param idPlanoConta ID do plano de contas
      * @return Lista de movimentações do plano de contas especificado
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.idPlanoConta = :idPlanoConta ORDER BY m.dataLancame DESC")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    List<MovContabil> findByIdPlanoConta(@Param("idPlanoConta") Integer idPlanoConta);
+    List<MovContabil> findByQuantidade(Integer quantidade);
 
     /**
      * Busca movimentações contábeis por data de lançamento.
@@ -161,16 +115,7 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param dataLancamento Data do lançamento
      * @return Lista de movimentações na data especificada
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.dataLancame = :dataLancamento ORDER BY m.numeLancam ASC")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    List<MovContabil> findByDataLancamento(@Param("dataLancamento") LocalDate dataLancamento);
+    List<MovContabil> findByDataMovimentacao(LocalDate dataMovimentacao);
 
     /**
      * Busca movimentações contábeis em uma faixa de datas.
@@ -183,17 +128,7 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param dataFim    Data final
      * @return Lista de movimentações na faixa de datas especificada
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.dataLancame BETWEEN :dataInicio AND :dataFim ORDER BY m.dataLancame ASC, m.numeLancam ASC")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    List<MovContabil> findByDataLancamentoBetween(@Param("dataInicio") LocalDate dataInicio,
-            @Param("dataFim") LocalDate dataFim);
+    List<MovContabil> findByDataMovimentacaoBetween(LocalDate dataInicio, LocalDate dataFim);
 
     /**
      * Busca movimentações contábeis por faixa de valor de débito.
@@ -206,17 +141,7 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param valorMaximo Valor máximo de débito
      * @return Lista de movimentações na faixa de débito especificada
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.valDbto BETWEEN :valorMinimo AND :valorMaximo ORDER BY m.valDbto DESC")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    List<MovContabil> findByValorDebitoBetween(@Param("valorMinimo") BigDecimal valorMinimo,
-            @Param("valorMaximo") BigDecimal valorMaximo);
+    List<MovContabil> findByValorUnitarioBetween(BigDecimal valorMinimo, BigDecimal valorMaximo);
 
     /**
      * Busca movimentações contábeis por faixa de valor de crédito.
@@ -229,17 +154,8 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param valorMaximo Valor máximo de crédito
      * @return Lista de movimentações na faixa de crédito especificada
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.valCdto BETWEEN :valorMinimo AND :valorMaximo ORDER BY m.valCdto DESC")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    List<MovContabil> findByValorCreditoBetween(@Param("valorMinimo") BigDecimal valorMinimo,
-            @Param("valorMaximo") BigDecimal valorMaximo);
+    // Valores totais entre faixa
+    List<MovContabil> findByValorTotalBetween(BigDecimal valorMinimo, BigDecimal valorMaximo);
 
     /**
      * Busca movimentações contábeis balanceadas (débito = crédito).
@@ -250,14 +166,9 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * 
      * @return Lista de movimentações balanceadas
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.valDbto = m.valCdto ORDER BY m.dataLancame DESC")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "false"), // Não cachear consultas dinâmicas
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    List<MovContabil> findMovimentacoesBalanceadas();
+    // Consultas agregadas
+    @Query("SELECT COALESCE(SUM(m.valorTotal),0) FROM MovContabil m WHERE m.produto.id = :produtoId")
+    BigDecimal sumValorTotalByProduto(@Param("produtoId") Integer produtoId);
 
     /**
      * Busca movimentações contábeis desbalanceadas (débito ≠ crédito).
@@ -268,14 +179,8 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * 
      * @return Lista de movimentações desbalanceadas
      */
-    @Query("SELECT m FROM MovContabil m WHERE m.valDbto <> m.valCdto ORDER BY m.dataLancame DESC")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.fetchSize", value = "50"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "false"), // Não cachear consultas dinâmicas
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "2000")
-    })
-    List<MovContabil> findMovimentacoesDesbalanceadas();
+    @Query("SELECT COALESCE(SUM(m.quantidade),0) FROM MovContabil m WHERE m.produto.id = :produtoId")
+    Long sumQuantidadeByProduto(@Param("produtoId") Integer produtoId);
 
     /**
      * Conta o total de movimentações por ordem de compra.
@@ -287,15 +192,8 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param idOrdComp ID da ordem de compra
      * @return Quantidade de movimentações da ordem de compra
      */
-    @Query("SELECT COUNT(m) FROM MovContabil m WHERE m.idOrdComp = :idOrdComp")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "1000")
-    })
-    Long countByIdOrdComp(@Param("idOrdComp") Integer idOrdComp);
+    @Query("SELECT COUNT(m) FROM MovContabil m WHERE m.produto.id = :produtoId")
+    Long countByProduto(@Param("produtoId") Integer produtoId);
 
     /**
      * Soma o valor total de débitos por plano de contas em um período.
@@ -309,17 +207,10 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param dataFim      Data final
      * @return Valor total de débitos do plano de contas no período
      */
-    @Query("SELECT COALESCE(SUM(m.valDbto), 0) FROM MovContabil m WHERE m.idPlanoConta = :idPlanoConta AND m.dataLancame BETWEEN :dataInicio AND :dataFim")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "1000")
-    })
-    BigDecimal sumDebitosByPlanoContaAndPeriodo(@Param("idPlanoConta") Integer idPlanoConta,
-            @Param("dataInicio") LocalDate dataInicio,
-            @Param("dataFim") LocalDate dataFim);
+    @Query("SELECT COALESCE(SUM(m.valorUnitario),0) FROM MovContabil m WHERE m.produto.id = :produtoId AND m.dataMovimentacao BETWEEN :dataInicio AND :dataFim")
+    BigDecimal sumValorUnitarioByProdutoAndPeriodo(@Param("produtoId") Integer produtoId,
+                                                   @Param("dataInicio") LocalDate dataInicio,
+                                                   @Param("dataFim") LocalDate dataFim);
 
     /**
      * Soma o valor total de créditos por plano de contas em um período.
@@ -333,17 +224,10 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param dataFim      Data final
      * @return Valor total de créditos do plano de contas no período
      */
-    @Query("SELECT COALESCE(SUM(m.valCdto), 0) FROM MovContabil m WHERE m.idPlanoConta = :idPlanoConta AND m.dataLancame BETWEEN :dataInicio AND :dataFim")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "1000")
-    })
-    BigDecimal sumCreditosByPlanoContaAndPeriodo(@Param("idPlanoConta") Integer idPlanoConta,
-            @Param("dataInicio") LocalDate dataInicio,
-            @Param("dataFim") LocalDate dataFim);
+    @Query("SELECT COALESCE(SUM(m.valorTotal),0) FROM MovContabil m WHERE m.produto.id = :produtoId AND m.dataMovimentacao BETWEEN :dataInicio AND :dataFim")
+    BigDecimal sumValorTotalByProdutoAndPeriodo(@Param("produtoId") Integer produtoId,
+                                                @Param("dataInicio") LocalDate dataInicio,
+                                                @Param("dataFim") LocalDate dataFim);
 
     /**
      * Calcula o saldo (débito - crédito) por plano de contas em um período.
@@ -357,16 +241,8 @@ public interface MovContabilRepository extends JpaRepository<MovContabil, Intege
      * @param dataFim      Data final
      * @return Saldo do plano de contas no período
      */
-    @Query("SELECT COALESCE(SUM(m.valDbto - m.valCdto), 0) FROM MovContabil m WHERE m.idPlanoConta = :idPlanoConta AND m.dataLancame BETWEEN :dataInicio AND :dataFim")
-    @QueryHints({
-            @QueryHint(name = "org.hibernate.readOnly", value = "true"),
-            @QueryHint(name = "org.hibernate.cacheable", value = "true"),
-            @QueryHint(name = "jakarta.persistence.cache.storeMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "USE"),
-            @QueryHint(name = "jakarta.persistence.query.timeout", value = "1000")
-    })
-    BigDecimal calcularSaldoByPlanoContaAndPeriodo(@Param("idPlanoConta") Integer idPlanoConta,
-            @Param("dataInicio") LocalDate dataInicio,
-            @Param("dataFim") LocalDate dataFim);
+    @Query("SELECT COALESCE(SUM(m.valorTotal),0) FROM MovContabil m WHERE m.dataMovimentacao BETWEEN :dataInicio AND :dataFim")
+    BigDecimal sumValorTotalPeriodo(@Param("dataInicio") LocalDate dataInicio,
+                                    @Param("dataFim") LocalDate dataFim);
 
 }

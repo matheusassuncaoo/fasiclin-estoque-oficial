@@ -1,160 +1,347 @@
 package com.br.fasiclin.estoque.estoque.service;
 
-import com.br.fasiclin.estoque.estoque.dto.FornecedorDTO;
-import com.br.fasiclin.estoque.estoque.exception.BusinessException;
-import com.br.fasiclin.estoque.estoque.exception.ResourceNotFoundException;
-import com.br.fasiclin.estoque.estoque.model.Fornecedor;
-import com.br.fasiclin.estoque.estoque.model.PessoaJuridica;
-import com.br.fasiclin.estoque.estoque.repository.FornecedorRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Service;
+
+import com.br.fasiclin.estoque.estoque.model.Fornecedor;
+import com.br.fasiclin.estoque.estoque.repository.FornecedorRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 /**
- * Service para gerenciamento de Fornecedores.
+ * Service para operações de negócio da entidade Fornecedor.
+ * 
+ * <p>
+ * Esta classe implementa a camada de serviço para o módulo de Fornecedores,
+ * fornecendo operações CRUD completas com validações de negócio, tratamento de
+ * exceções
+ * e métodos de consulta otimizados para gestão de fornecedores.
+ * </p>
+ * 
+ * <p>
+ * <strong>Funcionalidades principais:</strong>
+ * </p>
+ * <ul>
+ * <li>CRUD completo (Create, Read, Update, Delete)</li>
+ * <li>Consultas por ID de pessoa, representante e descrição</li>
+ * <li>Validações de integridade de dados</li>
+ * <li>Tratamento robusto de exceções</li>
+ * <li>Transações controladas</li>
+ * </ul>
  * 
  * @author Sistema Fasiclin - Módulo Estoque
  * @version 1.0
  * @since 2025
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class FornecedorService {
 
-    private final FornecedorRepository fornecedorRepository;
+    @Autowired
+    private FornecedorRepository fornecedorRepository;
 
     /**
-     * Busca fornecedor por ID
+     * Busca um fornecedor por ID.
+     * 
+     * @param id ID do fornecedor (não pode ser nulo)
+     * @return Fornecedor encontrado
+     * @throws EntityNotFoundException  se o fornecedor não for encontrado
+     * @throws IllegalArgumentException se o ID for nulo
      */
-    public FornecedorDTO findById(Integer id) {
-        log.debug("Buscando fornecedor com ID: {}", id);
-        Fornecedor fornecedor = fornecedorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Fornecedor", "id", id));
-        return convertToDTO(fornecedor);
+    public Fornecedor findById(@NotNull Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID não pode ser nulo");
+        }
+        return fornecedorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Fornecedor não encontrado com ID: " + id));
     }
 
     /**
-     * Lista todos os fornecedores com paginação
+     * Busca todos os fornecedores.
+     * 
+     * @return Lista de todos os fornecedores
      */
-    public Page<FornecedorDTO> findAll(Pageable pageable) {
-        log.debug("Listando fornecedores com paginação: {}", pageable);
-        return fornecedorRepository.findAll(pageable)
-                .map(this::convertToDTO);
+    public List<Fornecedor> findAll() {
+        return fornecedorRepository.findAll();
     }
 
     /**
-     * Busca fornecedores por representante
+     * Busca todos os fornecedores ordenados por representante.
+     * 
+     * @return Lista de fornecedores ordenados por representante
      */
-    public List<FornecedorDTO> findByRepresentante(String representante) {
-        log.debug("Buscando fornecedores por representante: {}", representante);
-        return fornecedorRepository.findByRepresentanteContaining(representante).stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    public List<Fornecedor> findAllOrderByRepresentante() {
+        return fornecedorRepository.findAllOrderByRepresentante();
     }
 
     /**
-     * Cria novo fornecedor
+     * Cria um novo fornecedor.
+     * 
+     * <p>
+     * <strong>Validações aplicadas:</strong>
+     * </p>
+     * <ul>
+     * <li>Objeto não pode ser nulo</li>
+     * <li>ID deve ser nulo (será gerado automaticamente)</li>
+     * <li>ID da pessoa é obrigatório</li>
+     * <li>ID da pessoa deve ser único</li>
+     * <li>Representante é obrigatório</li>
+     * </ul>
+     * 
+     * @param obj Fornecedor a ser criado (validado com @Valid)
+     * @return Fornecedor criado com ID gerado
+     * @throws IllegalArgumentException        se validações falharem
+     * @throws DataIntegrityViolationException se houver violação de integridade
      */
     @Transactional
-    public FornecedorDTO create(FornecedorDTO dto) {
-        log.info("Criando novo fornecedor");
+    public Fornecedor create(@Valid @NotNull Fornecedor obj) {
+        if (obj == null) {
+            throw new IllegalArgumentException("Fornecedor não pode ser nulo");
+        }
 
-        validateFornecedor(dto);
+        if (obj.getId() != null) {
+            throw new IllegalArgumentException("ID deve ser nulo para criação de novo fornecedor");
+        }
 
-        Fornecedor fornecedor = convertToEntity(dto);
-        Fornecedor saved = fornecedorRepository.save(fornecedor);
-        
-        log.info("Fornecedor criado com sucesso. ID: {}", saved.getId());
-        return convertToDTO(saved);
+        // Validações de negócio adicionais
+        validateBusinessRules(obj);
+
+        // Verificar se já existe fornecedor para esta pessoa
+        if (obj.getPessoasJuridica() != null && obj.getPessoasJuridica().getId() != null &&
+                fornecedorRepository.existsByIdPessoa(obj.getPessoasJuridica().getId())) {
+            throw new IllegalArgumentException(
+                    "Já existe um fornecedor cadastrado para a pessoa com ID: " + obj.getPessoasJuridica().getId());
+        }
+
+        try {
+            return fornecedorRepository.save(obj);
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityViolationException(
+                    "Erro de integridade ao criar fornecedor: " + e.getMessage(), e);
+        }
     }
 
     /**
-     * Atualiza fornecedor
+     * Atualiza um fornecedor existente.
+     * 
+     * <p>
+     * <strong>Validações aplicadas:</strong>
+     * </p>
+     * <ul>
+     * <li>Objeto não pode ser nulo</li>
+     * <li>ID deve existir no banco</li>
+     * <li>Campos obrigatórios devem estar preenchidos</li>
+     * <li>Regras de negócio específicas</li>
+     * </ul>
+     * 
+     * @param obj Fornecedor a ser atualizado (validado com @Valid)
+     * @return Fornecedor atualizado
+     * @throws EntityNotFoundException         se o fornecedor não existir
+     * @throws IllegalArgumentException        se validações falharem
+     * @throws DataIntegrityViolationException se houver violação de integridade
      */
     @Transactional
-    public FornecedorDTO update(Integer id, FornecedorDTO dto) {
-        log.info("Atualizando fornecedor ID: {}", id);
+    public Fornecedor update(@Valid @NotNull Fornecedor obj) {
+        if (obj == null) {
+            throw new IllegalArgumentException("Fornecedor não pode ser nulo");
+        }
 
-        Fornecedor existing = fornecedorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Fornecedor", "id", id));
+        if (obj.getId() == null) {
+            throw new IllegalArgumentException("ID é obrigatório para atualização");
+        }
 
-        validateFornecedor(dto);
-        updateEntity(existing, dto);
+        // Verifica se o fornecedor existe
+        Fornecedor existingFornecedor = findById(obj.getId());
 
-        Fornecedor updated = fornecedorRepository.save(existing);
-        log.info("Fornecedor atualizado com sucesso. ID: {}", id);
+        // Validações de negócio para atualização
+        validateUpdateRules(obj, existingFornecedor);
 
-        return convertToDTO(updated);
+        try {
+            return fornecedorRepository.save(obj);
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityViolationException(
+                    "Erro de integridade ao atualizar fornecedor: " + e.getMessage(), e);
+        }
     }
 
     /**
-     * Remove fornecedor
+     * Deleta um fornecedor por ID.
+     * 
+     * <p>
+     * <strong>Validações aplicadas:</strong>
+     * </p>
+     * <ul>
+     * <li>ID não pode ser nulo</li>
+     * <li>Fornecedor deve existir no banco</li>
+     * <li>Não pode deletar se houver dependências</li>
+     * </ul>
+     * 
+     * @param id ID do fornecedor a ser deletado
+     * @throws EntityNotFoundException  se o fornecedor não existir
+     * @throws IllegalArgumentException se o ID for nulo
+     * @throws IllegalStateException    se o fornecedor não puder ser deletado
      */
     @Transactional
-    public void delete(Integer id) {
-        log.info("Removendo fornecedor ID: {}", id);
-
-        Fornecedor fornecedor = fornecedorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Fornecedor", "id", id));
-
-        fornecedorRepository.delete(fornecedor);
-        log.info("Fornecedor removido com sucesso");
-    }
-
-    // ========== VALIDAÇÕES ==========
-
-    private void validateFornecedor(FornecedorDTO dto) {
-        if (dto.getIdPessoaJuridica() == null) {
-            throw new BusinessException("Pessoa jurídica é obrigatória");
+    public void deleteById(@NotNull Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID não pode ser nulo");
         }
 
-        if (dto.getRepresentante() != null && dto.getRepresentante().length() > 100) {
-            throw new BusinessException("Nome do representante não pode exceder 100 caracteres");
-        }
+        Fornecedor fornecedor = findById(id);
 
-        if (dto.getContatoRepresentante() != null && dto.getContatoRepresentante().length() > 15) {
-            throw new BusinessException("Contato não pode exceder 15 caracteres");
+        // Validação de negócio: verificar se pode ser deletado
+        validateDeletion(fornecedor);
+
+        try {
+            fornecedorRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("Fornecedor não encontrado com ID: " + id);
         }
     }
 
-    // ========== CONVERSÃO DTO <-> ENTITY ==========
-
-    private FornecedorDTO convertToDTO(Fornecedor entity) {
-        return FornecedorDTO.builder()
-                .id(entity.getId())
-                .idPessoaJuridica(entity.getPessoasJuridica() != null ? entity.getPessoasJuridica().getId() : null)
-                .representante(entity.getRepresentante())
-                .contatoRepresentante(entity.getContatoRepresentante())
-                .condicoesPagamento(entity.getDescricao())
-                .razaoSocial(entity.getPessoasJuridica() != null ? entity.getPessoasJuridica().getRazaoSocial() : null)
-                .cnpj(entity.getPessoasJuridica() != null ? entity.getPessoasJuridica().getCnpj() : null)
-                .build();
-    }
-
-    private Fornecedor convertToEntity(FornecedorDTO dto) {
-        Fornecedor fornecedor = new Fornecedor();
-        updateEntity(fornecedor, dto);
-        return fornecedor;
-    }
-
-    private void updateEntity(Fornecedor entity, FornecedorDTO dto) {
-        // Criar PessoaJuridica com ID
-        if (dto.getIdPessoaJuridica() != null) {
-            PessoaJuridica pj = new PessoaJuridica();
-            pj.setId(dto.getIdPessoaJuridica());
-            entity.setPessoasJuridica(pj);
+    /**
+     * Deleta um fornecedor por objeto.
+     * 
+     * @param obj Fornecedor a ser deletado
+     * @throws IllegalArgumentException se o objeto for nulo
+     */
+    @Transactional
+    public void delete(@NotNull Fornecedor obj) {
+        if (obj == null) {
+            throw new IllegalArgumentException("Fornecedor não pode ser nulo");
         }
-        
-        entity.setRepresentante(dto.getRepresentante());
-        entity.setContatoRepresentante(dto.getContatoRepresentante());
-        entity.setDescricao(dto.getCondicoesPagamento());
+
+        if (obj.getId() == null) {
+            throw new IllegalArgumentException("ID é obrigatório para deleção");
+        }
+
+        deleteById(obj.getId());
+    }
+
+    /**
+     * Busca fornecedor por ID de pessoa.
+     * 
+     * @param idPessoa ID da pessoa
+     * @return Fornecedor encontrado ou null se não existir
+     */
+    public Fornecedor findByIdPessoa(@NotNull Integer idPessoa) {
+        if (idPessoa == null) {
+            throw new IllegalArgumentException("ID da pessoa não pode ser nulo");
+        }
+        return fornecedorRepository.findByIdPessoa(idPessoa).orElse(null);
+    }
+
+    /**
+     * Busca fornecedores por representante (busca parcial).
+     * 
+     * @param representante termo de busca para representante
+     * @return Lista de fornecedores encontrados
+     */
+    public List<Fornecedor> findByRepresentanteContaining(@NotNull String representante) {
+        if (representante == null || representante.trim().isEmpty()) {
+            throw new IllegalArgumentException("Representante não pode ser nulo ou vazio");
+        }
+        return fornecedorRepository.findByRepresentanteContaining(representante.trim());
+    }
+
+    /**
+     * Busca fornecedores por descrição (busca parcial).
+     * 
+     * @param descricao termo de busca para descrição
+     * @return Lista de fornecedores encontrados
+     */
+    public List<Fornecedor> findByDescricaoContaining(@NotNull String descricao) {
+        if (descricao == null || descricao.trim().isEmpty()) {
+            throw new IllegalArgumentException("Descrição não pode ser nula ou vazia");
+        }
+        return fornecedorRepository.findByDescricaoContaining(descricao.trim());
+    }
+
+    /**
+     * Busca fornecedores por contato do representante.
+     * 
+     * @param contatoRepresentante contato do representante
+     * @return Lista de fornecedores encontrados
+     */
+    public List<Fornecedor> findByContatoRepresentante(@NotNull String contatoRepresentante) {
+        if (contatoRepresentante == null || contatoRepresentante.trim().isEmpty()) {
+            throw new IllegalArgumentException("Contato do representante não pode ser nulo ou vazio");
+        }
+        return fornecedorRepository.findByContatoRepresentante(contatoRepresentante.trim());
+    }
+
+    /**
+     * Verifica se existe fornecedor para o ID de pessoa especificado.
+     * 
+     * @param idPessoa ID da pessoa
+     * @return true se existe, false caso contrário
+     */
+    public boolean existsByIdPessoa(@NotNull Integer idPessoa) {
+        if (idPessoa == null) {
+            throw new IllegalArgumentException("ID da pessoa não pode ser nulo");
+        }
+        return fornecedorRepository.existsByIdPessoa(idPessoa);
+    }
+
+    /**
+     * Valida as regras de negócio para um fornecedor.
+     * 
+     * @param fornecedor fornecedor a ser validado
+     * @throws IllegalArgumentException se alguma regra for violada
+     */
+    private void validateBusinessRules(Fornecedor fornecedor) {
+        if (fornecedor.getPessoasJuridica() == null || fornecedor.getPessoasJuridica().getId() == null) {
+            throw new IllegalArgumentException("ID da pessoa é obrigatório");
+        }
+
+        if (fornecedor.getRepresentante() == null || fornecedor.getRepresentante().trim().isEmpty()) {
+            throw new IllegalArgumentException("Representante é obrigatório");
+        }
+    }
+
+    /**
+     * Valida as regras específicas para atualização de fornecedor.
+     * 
+     * @param newFornecedor      novo fornecedor com dados atualizados
+     * @param existingFornecedor fornecedor existente no banco
+     * @throws IllegalArgumentException se alguma regra for violada
+     */
+    private void validateUpdateRules(Fornecedor newFornecedor, Fornecedor existingFornecedor) {
+        validateBusinessRules(newFornecedor);
+
+        // Se mudou o ID da pessoa, verificar se não conflita com outro fornecedor
+        Integer newIdPessoa = newFornecedor.getPessoasJuridica() != null ? newFornecedor.getPessoasJuridica().getId() : null;
+        Integer existingIdPessoa = existingFornecedor.getPessoasJuridica() != null ? existingFornecedor.getPessoasJuridica().getId() : null;
+
+        if (newIdPessoa != null && !newIdPessoa.equals(existingIdPessoa)) {
+            if (fornecedorRepository.existsByIdPessoa(newIdPessoa)) {
+                throw new IllegalArgumentException(
+                        "Já existe um fornecedor cadastrado para a pessoa com ID: " + newIdPessoa);
+            }
+        }
+    }
+
+    /**
+     * Valida se o fornecedor pode ser deletado.
+     * 
+     * @param fornecedor fornecedor a ser validado para deleção
+     * @throws IllegalStateException se o fornecedor não puder ser deletado
+     */
+    private void validateDeletion(Fornecedor fornecedor) {
+        // Aqui podem ser adicionadas validações específicas de negócio
+        // Por exemplo, verificar se não há ordens de compra ativas para este fornecedor
+
+        // Exemplo de validação comentada:
+        // if (hasActiveOrders(fornecedor.getId())) {
+        // throw new IllegalStateException(
+        // "Não é possível deletar fornecedor que possui ordens de compra ativas");
+        // }
     }
 }

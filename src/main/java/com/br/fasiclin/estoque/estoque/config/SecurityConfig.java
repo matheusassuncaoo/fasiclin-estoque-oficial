@@ -36,36 +36,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                // Ordem de Compra - Matheus
-                .requestMatchers("/ordemcompra/**", "/api/ordens-compra/**").hasRole("MATHEUS")
-                
-                // Movimentação de Estoque - Yuri
-                .requestMatchers("/movimentacaoestoque/**", "/api/estoque/**").hasRole("YURI")
-                
-                // Validação de Almoxarifado - Erasmo
-                .requestMatchers("/validacaoalmoxarifado/**", "/api/produtos/reposicao/**", "/api/produtos/estoque-baixo/**").hasRole("ERASMO")
-                
-                // API Produtos - todos podem acessar
-                .requestMatchers("/api/produtos/**").authenticated()
-                
-                // Assets e recursos estáticos - públicos
-                .requestMatchers("/assets/**", "/css/**", "/js/**", "/images/**", "/logo/**").permitAll()
-                
-                // Swagger - público
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                
-                // Qualquer outra requisição precisa autenticação
-                .anyRequest().authenticated()
-            )
-            .httpBasic(httpBasic -> httpBasic.realmName("Sistema Fasiclin Estoque"))
-            .formLogin(form -> form
-                .loginPage("/login")
-                .permitAll()
-                .defaultSuccessUrl("/", true)
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/login?logout")
-                .permitAll()
+                .anyRequest().permitAll()
             );
         
         return http.build();

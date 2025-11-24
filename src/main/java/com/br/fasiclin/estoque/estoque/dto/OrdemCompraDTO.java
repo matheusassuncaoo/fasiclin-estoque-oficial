@@ -1,6 +1,6 @@
 package com.br.fasiclin.estoque.estoque.dto;
 
-import com.br.fasiclin.estoque.estoque.model.StatusOrdemCompra;
+import com.br.fasiclin.estoque.estoque.model.OrdemCompra.StatusOrdemCompra;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

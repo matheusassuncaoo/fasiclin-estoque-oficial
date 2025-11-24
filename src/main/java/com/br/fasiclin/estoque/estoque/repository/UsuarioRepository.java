@@ -22,13 +22,13 @@ import com.br.fasiclin.estoque.estoque.model.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
 
     /**
-     * Busca usuário por nome de usuário.
+     * Busca usuário por login.
      * 
-     * @param nomeUsuario nome de usuário
+     * @param login login do usuário
      * @return Optional contendo o usuário se encontrado
      */
-    @Query("SELECT u FROM Usuario u WHERE u.nomeUsuario = :nomeUsuario")
-    Optional<Usuario> findByNomeUsuario(@Param("nomeUsuario") String nomeUsuario);
+    // Ajustado: campo na entidade é nomeUsuario
+    @Query("SELECT u FROM Usuario u WHERE u.nomeUsuario = :login")
     Optional<Usuario> findByLogin(@Param("login") String login);
 
     /**
@@ -38,7 +38,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
      * @param senha senha do usuário (deve estar hash)
      * @return true se as credenciais são válidas
      */
-    @Query("SELECT COUNT(u) > 0 FROM Usuario u WHERE u.login = :login AND u.senha = :senha")
+    @Query("SELECT COUNT(u) > 0 FROM Usuario u WHERE u.nomeUsuario = :login AND u.senha = :senha")
     boolean existsByLoginAndSenha(@Param("login") String login, @Param("senha") String senha);
 
     /**
@@ -48,6 +48,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
      * @param senha senha do usuário
      * @return Optional contendo o usuário se as credenciais forem válidas
      */
-    @Query("SELECT u FROM Usuario u WHERE u.login = :login AND u.senha = :senha")
+    @Query("SELECT u FROM Usuario u WHERE u.nomeUsuario = :login AND u.senha = :senha")
     Optional<Usuario> findByLoginAndSenha(@Param("login") String login, @Param("senha") String senha);
 }

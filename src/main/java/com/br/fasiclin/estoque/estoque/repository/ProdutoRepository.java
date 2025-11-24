@@ -5,11 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import com.br.fasiclin.estoque.estoque.model.Produto;
-
 import jakarta.persistence.QueryHint;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -30,21 +27,22 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
     })
     List<Produto> findByNome(@Param("nome") String nome);
 
-    @Query("SELECT DISTINCT p FROM Produto p JOIN Estoque e ON p.id = e.idProduto WHERE e.qtdEstoque <= p.pntPedido ORDER BY p.nome")
+        // Ajuste: relacionamento Estoque -> Produto via campo produto; campo quantidadeEstoque e ptnPedido (nome na entidade)
+        @Query("SELECT DISTINCT p FROM Produto p JOIN Estoque e ON p = e.produto WHERE e.quantidadeEstoque <= p.ptnPedido ORDER BY p.nome")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50")
     })
     List<Produto> findProdutosParaReposicao();
 
-    @Query("SELECT DISTINCT p FROM Produto p JOIN Estoque e ON p.id = e.idProduto WHERE e.qtdEstoque > p.pntPedido AND e.qtdEstoque <= p.stqMin ORDER BY p.nome")
+        @Query("SELECT DISTINCT p FROM Produto p JOIN Estoque e ON p = e.produto WHERE e.quantidadeEstoque > p.ptnPedido AND e.quantidadeEstoque <= p.stqMin ORDER BY p.nome")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50")
     })
     List<Produto> findProdutosEstoqueBaixo();
 
-    @Query("SELECT DISTINCT p FROM Produto p JOIN Estoque e ON p.id = e.idProduto WHERE e.qtdEstoque <= p.pntPedido ORDER BY e.qtdEstoque ASC, p.nome")
+        @Query("SELECT DISTINCT p FROM Produto p JOIN Estoque e ON p = e.produto WHERE e.quantidadeEstoque <= p.ptnPedido ORDER BY e.quantidadeEstoque ASC, p.nome")
     @QueryHints({
             @QueryHint(name = "org.hibernate.readOnly", value = "true"),
             @QueryHint(name = "org.hibernate.fetchSize", value = "50")

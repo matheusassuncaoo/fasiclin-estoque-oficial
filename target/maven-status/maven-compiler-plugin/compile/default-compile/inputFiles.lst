@@ -3,12 +3,15 @@ C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\config\WebConfig.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\EstoqueController.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\FornecedorController.java
+C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\HealthCheckController.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\ItemOrdemCompraController.java
+C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\LoteController.java
+C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\MovContabilController.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\OrdemCompraController.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\ProdutoController.java
-C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\UsuarioController.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\controller\ViewController.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\dto\ApiResponseDTO.java
+C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\dto\DeactivationRequestDTO.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\dto\EstoqueDTO.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\dto\FornecedorDTO.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\dto\ItemOrdemCompraDTO.java
@@ -29,7 +32,6 @@ C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\model\PessoaJuridica.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\model\Produto.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\model\Setor.java
-C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\model\StatusOrdemCompra.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\model\UnidadeMedida.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\model\Usuario.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\repository\EstoqueRepository.java
@@ -43,6 +45,8 @@ C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\service\EstoqueService.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\service\FornecedorService.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\service\ItemOrdemCompraService.java
+C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\service\LoteService.java
+C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\service\MovContabilService.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\service\OrdemCompraService.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\service\ProdutoService.java
 C:\Users\Matheus\Documents\estoque\estoque\src\main\java\com\br\fasiclin\estoque\estoque\service\UsuarioService.java

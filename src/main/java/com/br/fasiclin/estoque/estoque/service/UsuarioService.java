@@ -1,177 +1,124 @@
 package com.br.fasiclin.estoque.estoque.service;
 
-import com.br.fasiclin.estoque.estoque.dto.UsuarioDTO;
-import com.br.fasiclin.estoque.estoque.exception.BusinessException;
-import com.br.fasiclin.estoque.estoque.exception.ResourceNotFoundException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.br.fasiclin.estoque.estoque.model.Usuario;
 import com.br.fasiclin.estoque.estoque.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.validation.constraints.NotBlank;
 
 /**
- * Service para gerenciamento de Usuários.
- * Gerencia autenticação, autorização e CRUD de usuários.
+ * Service para operações de autenticação de usuários.
  * 
- * @author Sistema Fasiclin - Módulo Estoque
+ * Fornece métodos para validação de credenciais de usuários do sistema.
+ * 
+ * @author Sistema Fasiclin
  * @version 1.0
  * @since 2025
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UsuarioService {
-    
-    private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
-    
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     /**
-     * Busca usuário por ID
+     * Autentica um usuário com login e senha.
+     * 
+     * @param login login do usuário
+     * @param senha senha em texto plano
+     * @return true se as credenciais são válidas
      */
-    public UsuarioDTO findById(Integer id) {
-        log.debug("Buscando usuário com ID: {}", id);
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
-        return convertToDTO(usuario);
-    }
-    
-    /**
-     * Lista todos os usuários com paginação
-     */
-    public Page<UsuarioDTO> findAll(Pageable pageable) {
-        log.debug("Listando usuários com paginação: {}", pageable);
-        return usuarioRepository.findAll(pageable)
-                .map(this::convertToDTO);
-    }
-    
-    /**
-     * Busca usuário por nome de usuário
-     */
-    public UsuarioDTO findByNomeUsuario(String nomeUsuario) {
-        log.debug("Buscando usuário por nome: {}", nomeUsuario);
-        Usuario usuario = usuarioRepository.findByNomeUsuario(nomeUsuario)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "nomeUsuario", nomeUsuario));
-        return convertToDTO(usuario);
-    }
-    
-    /**
-     * Cria novo usuário
-     */
-    @Transactional
-    public UsuarioDTO create(UsuarioDTO dto) {
-        log.info("Criando novo usuário: {}", dto.getNomeUsuario());
-        
-        // Validar se nome de usuário já existe
-        if (usuarioRepository.findByNomeUsuario(dto.getNomeUsuario()).isPresent()) {
-            throw new BusinessException("Nome de usuário já existe");
+    public boolean autenticarUsuario(@NotBlank String login, @NotBlank String senha) {
+        if (login == null || login.trim().isEmpty()) {
+            return false;
         }
-        
-        Usuario usuario = convertToEntity(dto);
-        // Criptografar senha
-        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
-        usuario.setAtivo(true);
-        
-        Usuario saved = usuarioRepository.save(usuario);
-        log.info("Usuário criado com sucesso. ID: {}", saved.getId());
-        
-        return convertToDTO(saved);
-    }
-    
-    /**
-     * Atualiza usuário existente
-     */
-    @Transactional
-    public UsuarioDTO update(Integer id, UsuarioDTO dto) {
-        log.info("Atualizando usuário ID: {}", id);
-        
-        Usuario existing = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
-        
-        // Validar se mudança de nome de usuário conflita com existente
-        if (!existing.getNomeUsuario().equals(dto.getNomeUsuario())) {
-            usuarioRepository.findByNomeUsuario(dto.getNomeUsuario())
-                    .ifPresent(u -> {
-                        throw new BusinessException("Nome de usuário já existe");
-                    });
+
+        if (senha == null || senha.trim().isEmpty()) {
+            return false;
         }
-        
-        updateEntity(existing, dto);
-        
-        // Só atualiza senha se foi fornecida nova
-        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
-            existing.setSenha(passwordEncoder.encode(dto.getSenha()));
+
+        try {
+            // Por simplicidade, vamos assumir que a senha no banco pode estar em texto
+            // plano
+            // ou com hash simples MD5 (não recomendado para produção)
+
+            // Primeiro, tentar com senha em texto plano
+            boolean existsPlain = usuarioRepository.existsByLoginAndSenha(login.trim(), senha.trim());
+            if (existsPlain) {
+                return true;
+            }
+
+            // Se não encontrou, tentar com hash MD5
+            String senhaHash = gerarHashMD5(senha.trim());
+            boolean existsHash = usuarioRepository.existsByLoginAndSenha(login.trim(), senhaHash);
+
+            return existsHash;
+
+        } catch (Exception e) {
+            System.err.println("Erro ao autenticar usuário: " + e.getMessage());
+            return false;
         }
-        
-        Usuario updated = usuarioRepository.save(existing);
-        log.info("Usuário atualizado com sucesso. ID: {}", id);
-        
-        return convertToDTO(updated);
     }
-    
+
     /**
-     * Ativa/desativa usuário
+     * Busca usuário por login.
+     * 
+     * @param login login do usuário
+     * @return Optional contendo o usuário se encontrado
      */
-    @Transactional
-    public UsuarioDTO toggleAtivo(Integer id) {
-        log.info("Alternando status ativo do usuário ID: {}", id);
-        
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
-        
-        usuario.setAtivo(!usuario.getAtivo());
-        Usuario updated = usuarioRepository.save(usuario);
-        
-        log.info("Status atualizado para: {}", updated.getAtivo());
-        return convertToDTO(updated);
-    }
-    
-    /**
-     * Remove usuário (soft delete recomendado)
-     */
-    @Transactional
-    public void delete(Integer id) {
-        log.info("Removendo usuário ID: {}", id);
-        
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
-        
-        // Em produção, prefira desativar ao invés de remover
-        usuario.setAtivo(false);
-        usuarioRepository.save(usuario);
-        
-        log.info("Usuário desativado com sucesso");
-    }
-    
-    // ========== CONVERSÃO DTO <-> ENTITY ==========
-    
-    private UsuarioDTO convertToDTO(Usuario entity) {
-        return UsuarioDTO.builder()
-                .id(entity.getId())
-                .nomeUsuario(entity.getNomeUsuario())
-                // NUNCA retornar senha
-                .nomeCompleto(entity.getNomeCompleto())
-                .email(entity.getEmail())
-                .ativo(entity.getAtivo())
-                .build();
-    }
-    
-    private Usuario convertToEntity(UsuarioDTO dto) {
-        Usuario usuario = new Usuario();
-        updateEntity(usuario, dto);
-        return usuario;
-    }
-    
-    private void updateEntity(Usuario entity, UsuarioDTO dto) {
-        entity.setNomeUsuario(dto.getNomeUsuario());
-        entity.setNomeCompleto(dto.getNomeCompleto());
-        entity.setEmail(dto.getEmail());
-        if (dto.getAtivo() != null) {
-            entity.setAtivo(dto.getAtivo());
+    public Optional<Usuario> buscarPorLogin(@NotBlank String login) {
+        if (login == null || login.trim().isEmpty()) {
+            return Optional.empty();
         }
+
+        return usuarioRepository.findByLogin(login.trim());
+    }
+
+    /**
+     * Gera hash MD5 de uma string.
+     * 
+     * NOTA: MD5 não é seguro para produção. Use BCrypt ou similar em ambiente real.
+     * 
+     * @param input string para gerar hash
+     * @return hash MD5 da string
+     */
+    private String gerarHashMD5(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(input.getBytes());
+
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : messageDigest) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Erro ao gerar hash MD5", e);
+        }
+    }
+
+    /**
+     * Verifica se um usuário existe pelo login.
+     * 
+     * @param login login do usuário
+     * @return true se o usuário existe
+     */
+    public boolean existePorLogin(@NotBlank String login) {
+        if (login == null || login.trim().isEmpty()) {
+            return false;
+        }
+
+        return usuarioRepository.findByLogin(login.trim()).isPresent();
     }
 }

@@ -1,5 +1,7 @@
 <div align="center">
 
+<img width="624" alt="image-Photoroom (3)" src="https://github.com/user-attachments/assets/e8ea3252-a597-4906-8271-521290293871" />
+
 # 📦 Sistema de Gestão de Estoque - Fasiclin
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -8,6 +10,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Sistema completo de gestão de estoque com controle de produtos, ordens de compra, movimentações e validação de almoxarifado.
+
 
 [Características](#-características) •
 [Tecnologias](#-tecnologias) •
